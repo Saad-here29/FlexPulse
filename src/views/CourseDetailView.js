@@ -8,12 +8,12 @@ import FilterChips from '../components/FilterChips';
 import EmptyState from '../components/EmptyState';
 import FormField from '../components/FormField';
 import PrimaryButton from '../components/PrimaryButton';
+import GradingNote from '../components/GradingNote';
 import {
   COLORS,
   STATUS_COLORS,
   GRADE_SCALE,
   DEFAULT_TARGET_GRADE,
-  GRADING_NOTE,
 } from '../constants/config';
 import {
   getAttendancePercent,
@@ -79,8 +79,13 @@ export default function CourseDetailView({ course, onBack, onUpdateMarks }) {
 
   // ----- Marks editor -----
 
-  // Open the editor for one row, pre-filled with its current marks
+  // Open the editor for one row, pre-filled with its current marks.
+  // Tapping the row that is already open closes it instead.
   const startEditing = (index) => {
+    if (index === editingIndex) {
+      setEditingIndex(null);
+      return;
+    }
     const obtained = course.assessments[index].obtained;
     setEditingIndex(index);
     setDraft(obtained === null ? '' : String(obtained));
@@ -178,7 +183,7 @@ export default function CourseDetailView({ course, onBack, onUpdateMarks }) {
               ? 'No marks entered yet'
               : `Score so far: ${score.toFixed(1)} / ${gradedWeight} → ${scorePercent.toFixed(1)}% (${getGrade(scorePercent)})`}
           </Text>
-          <Text style={styles.note}>{GRADING_NOTE}</Text>
+          <GradingNote style={styles.note} />
         </Card>
 
         {/* Target grade calculator */}
@@ -282,9 +287,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   note: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    color: COLORS.textMuted,
     marginTop: 6,
   },
   pending: {

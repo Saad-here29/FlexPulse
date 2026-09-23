@@ -36,8 +36,14 @@ The attendance limit (80%) and warning margin (5%) live in one config file, so c
 - **Course Detail**
   - Attendance summary and advice, plus assessment marks, with "Pending" for anything not yet graded.
   - Target grade chips that show the score you need in the remaining assessments.
-  - Tap an assessment to enter, edit or clear its marks in an inline editor. Invalid marks are rejected, and score, grade, GPA and charts update instantly.
-  - Grades are estimated with the FAST absolute grading scheme (A+ at 90% down to F below 50%).
+  - **Enter and edit marks:** tap an assessment to open an inline editor with Save, Clear (back to Pending) and Cancel. Marks must be a number from 0 to the assessment's maximum, with at most 2 decimal places. Score, grade, GPA, charts and "what do I need" messages update instantly.
+- **FAST absolute grading scale.** Grades and GPA use the exact (unrounded) score, so 89.6% is an A and 90.0% is an A+. The Marks and Course Detail screens show a note that actual grades may be relative.
+
+  | Grade | A+ | A | A- | B+ | B | B- | C+ | C | C- | D+ | D | F |
+  |---|---|---|---|---|---|---|---|---|---|---|---|---|
+  | Min % | 90 | 86 | 82 | 78 | 74 | 70 | 66 | 62 | 58 | 54 | 50 | 0 |
+  | Points | 4.00 | 4.00 | 3.67 | 3.33 | 3.00 | 2.67 | 2.33 | 2.00 | 1.67 | 1.33 | 1.00 | 0.00 |
+
 - **Add Course**
   - A validated form with inline error messages.
   - Rejects: empty fields, credit hours outside 1–4, decimals and negative numbers, attended more than total, and duplicate course codes.
@@ -70,6 +76,7 @@ flex-pulse/
     │   ├── EmptyState.js          Message shown when a list is empty, with an optional button
     │   ├── FilterChips.js         Row of selectable chips (status filter, target grade)
     │   ├── FormField.js           Label + text input + red error message
+    │   ├── GradingNote.js         Italic reminder that grades are FAST absolute-grading estimates
     │   ├── PrimaryButton.js       Main action button with disabled and outline styles
     │   ├── ProgressBar.js         Horizontal bar filled to a percentage
     │   ├── ScreenHeader.js        Screen title, subtitle and optional Back button
