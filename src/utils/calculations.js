@@ -81,13 +81,17 @@ export function getCurrentScore(assessments) {
   return score;
 }
 
+// Total weight of the assessments that already have marks (e.g. 50 if only the final is left)
+export function getGradedWeight(assessments) {
+  return assessments
+    .filter((a) => a.obtained !== null)
+    .reduce((sum, a) => sum + a.weight, 0);
+}
+
 // Current score as a % of the work graded so far (e.g. 43 out of 50 graded = 86%).
 // Returns null if nothing has been graded yet.
 export function getScorePercent(assessments) {
-  const gradedWeight = assessments
-    .filter((a) => a.obtained !== null)
-    .reduce((sum, a) => sum + a.weight, 0);
-
+  const gradedWeight = getGradedWeight(assessments);
   if (gradedWeight === 0) return null;
   return (getCurrentScore(assessments) / gradedWeight) * 100;
 }

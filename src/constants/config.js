@@ -51,6 +51,20 @@ export const CHART_CONFIG = {
   propsForLabels: { fontSize: 10 },
 };
 
+// Add Course form limits
+export const MAX_CODE_LENGTH = 8;
+export const MIN_CREDIT_HOURS = 1;
+export const MAX_CREDIT_HOURS = 4;
+
+// Assessments given to a newly added course (no marks yet, so obtained is null)
+export const DEFAULT_ASSESSMENTS = [
+  { name: 'Quizzes', weight: 10, obtained: null, outOf: 100 },
+  { name: 'Assignments', weight: 10, obtained: null, outOf: 100 },
+  { name: 'Midterm 1', weight: 15, obtained: null, outOf: 100 },
+  { name: 'Midterm 2', weight: 15, obtained: null, outOf: 100 },
+  { name: 'Final Exam', weight: 50, obtained: null, outOf: 100 },
+];
+
 // Grade boundaries, highest first. getGrade() picks the first one the score reaches.
 export const GRADE_SCALE = [
   { grade: 'A+', min: 90, points: 4.0 },

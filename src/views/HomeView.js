@@ -35,7 +35,7 @@ function getGreeting() {
   return 'Good evening';
 }
 
-export default function HomeView({ courses, onNavigate, onOpenCourse }) {
+export default function HomeView({ courses, notice, onDismissNotice, onNavigate, onOpenCourse }) {
   // No courses yet: show only the greeting and a button to add one
   if (courses.length === 0) {
     return (
@@ -121,6 +121,16 @@ export default function HomeView({ courses, onNavigate, onOpenCourse }) {
       <ScreenHeader title={getGreeting()} subtitle="Here's how your semester is going" />
 
       <View style={styles.body}>
+        {/* Success message, e.g. after adding a course */}
+        {notice ? (
+          <View style={styles.notice}>
+            <Text style={styles.noticeText}>✅ {notice}</Text>
+            <TouchableOpacity onPress={onDismissNotice}>
+              <Text style={styles.noticeClose}>✕</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
         {/* Summary stat cards */}
         <View style={styles.statRow}>
           <StatCard label="Attendance" value={`${overallAttendance.toFixed(1)}%`} />
@@ -246,6 +256,25 @@ const styles = StyleSheet.create({
   },
   body: {
     paddingHorizontal: 20,
+  },
+  notice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.safeLight,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+  },
+  noticeText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.safe,
+  },
+  noticeClose: {
+    fontSize: 16,
+    color: COLORS.safe,
+    paddingLeft: 12,
   },
   statRow: {
     flexDirection: 'row',
