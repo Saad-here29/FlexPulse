@@ -1,5 +1,5 @@
 // Starting data for the app. `obtained: null` means the assessment has not happened yet.
-// Attendance mix: 3 safe, 1 near the threshold (warning), 1 below it (danger).
+// Attendance mix (with the default threshold in config.js): 3 safe, 1 warning, 1 danger.
 
 const initialCourses = [
   {
@@ -41,7 +41,7 @@ const initialCourses = [
     instructor: 'Dr. Usman Tariq',
     creditHours: 3,
     attended: 21,
-    total: 25, // 84.0% - warning (close to 80%)
+    total: 25, // 84.0% - warning (just above the threshold)
     assessments: [
       { name: 'Quizzes', weight: 10, obtained: 14, outOf: 20 },
       { name: 'Assignments', weight: 10, obtained: 34, outOf: 40 },
@@ -57,7 +57,7 @@ const initialCourses = [
     instructor: 'Ms. Sana Iqbal',
     creditHours: 3,
     attended: 17,
-    total: 23, // 73.9% - danger (below 80%)
+    total: 23, // 73.9% - danger (below the threshold)
     assessments: [
       { name: 'Quizzes', weight: 10, obtained: 9, outOf: 20 },
       { name: 'Assignments', weight: 10, obtained: 22, outOf: 40 },

@@ -5,14 +5,13 @@ import SearchBar from '../components/SearchBar';
 import FilterChips from '../components/FilterChips';
 import CourseCard from '../components/CourseCard';
 import EmptyState from '../components/EmptyState';
-import { COLORS, ATTENDANCE_THRESHOLD } from '../constants/config';
+import { COLORS, ATTENDANCE_THRESHOLD, STATUS_LABELS } from '../constants/config';
 import { getAttendancePercent, getAttendanceStatus } from '../utils/calculations';
 
+// "All" plus one chip per status, using the same labels as the status badges
 const FILTER_OPTIONS = [
   { label: 'All', value: 'all' },
-  { label: 'Safe', value: 'safe' },
-  { label: 'Warning', value: 'warning' },
-  { label: 'At risk', value: 'danger' },
+  ...Object.keys(STATUS_LABELS).map((status) => ({ label: STATUS_LABELS[status], value: status })),
 ];
 
 export default function AttendanceView({ courses, onBack, onMarkAttendance, onOpenCourse }) {

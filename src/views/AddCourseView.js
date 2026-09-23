@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { KeyboardAvoidingView, ScrollView, View, Text, Platform, StyleSheet } from 'react-native';
 import ScreenHeader from '../components/ScreenHeader';
 import FormField from '../components/FormField';
@@ -26,9 +26,12 @@ export default function AddCourseView({ courses, onAddCourse, onBack }) {
   // Only show a field's error after the user has touched it
   const errorFor = (field) => (touched[field] ? errors[field] : null);
 
-  // Each input stores itself here so "Next" on the keyboard can focus the following field
-  const inputs = {};
-  const focusNext = (field) => inputs[field] && inputs[field].focus();
+  // Refs to the inputs so "Next" on the keyboard can focus the following field
+  const nameRef = useRef(null);
+  const instructorRef = useRef(null);
+  const creditHoursRef = useRef(null);
+  const attendedRef = useRef(null);
+  const totalRef = useRef(null);
 
   const handleSubmit = () => {
     if (!isValid) return;
@@ -61,7 +64,7 @@ export default function AddCourseView({ courses, onAddCourse, onBack }) {
             maxLength={MAX_CODE_LENGTH}
             returnKeyType="next"
             submitBehavior="submit"
-            onSubmitEditing={() => focusNext('name')}
+            onSubmitEditing={() => nameRef.current.focus()}
           />
           <FormField
             label="Course name"
@@ -70,10 +73,10 @@ export default function AddCourseView({ courses, onAddCourse, onBack }) {
             onChangeText={(text) => updateField('name', text)}
             onBlur={() => markTouched('name')}
             error={errorFor('name')}
-            inputRef={(el) => (inputs.name = el)}
+            inputRef={nameRef}
             returnKeyType="next"
             submitBehavior="submit"
-            onSubmitEditing={() => focusNext('instructor')}
+            onSubmitEditing={() => instructorRef.current.focus()}
           />
           <FormField
             label="Instructor"
@@ -82,10 +85,10 @@ export default function AddCourseView({ courses, onAddCourse, onBack }) {
             onChangeText={(text) => updateField('instructor', text)}
             onBlur={() => markTouched('instructor')}
             error={errorFor('instructor')}
-            inputRef={(el) => (inputs.instructor = el)}
+            inputRef={instructorRef}
             returnKeyType="next"
             submitBehavior="submit"
-            onSubmitEditing={() => focusNext('creditHours')}
+            onSubmitEditing={() => creditHoursRef.current.focus()}
           />
           <FormField
             label="Credit hours"
@@ -94,11 +97,11 @@ export default function AddCourseView({ courses, onAddCourse, onBack }) {
             onChangeText={(text) => updateField('creditHours', text)}
             onBlur={() => markTouched('creditHours')}
             error={errorFor('creditHours')}
-            inputRef={(el) => (inputs.creditHours = el)}
+            inputRef={creditHoursRef}
             keyboardType="numeric"
             returnKeyType="next"
             submitBehavior="submit"
-            onSubmitEditing={() => focusNext('attended')}
+            onSubmitEditing={() => attendedRef.current.focus()}
           />
           <FormField
             label="Classes attended"
@@ -107,11 +110,11 @@ export default function AddCourseView({ courses, onAddCourse, onBack }) {
             onChangeText={(text) => updateField('attended', text)}
             onBlur={() => markTouched('attended')}
             error={errorFor('attended')}
-            inputRef={(el) => (inputs.attended = el)}
+            inputRef={attendedRef}
             keyboardType="numeric"
             returnKeyType="next"
             submitBehavior="submit"
-            onSubmitEditing={() => focusNext('total')}
+            onSubmitEditing={() => totalRef.current.focus()}
           />
           <FormField
             label="Total classes held"
@@ -120,7 +123,7 @@ export default function AddCourseView({ courses, onAddCourse, onBack }) {
             onChangeText={(text) => updateField('total', text)}
             onBlur={() => markTouched('total')}
             error={errorFor('total')}
-            inputRef={(el) => (inputs.total = el)}
+            inputRef={totalRef}
             keyboardType="numeric"
             returnKeyType="done"
             onSubmitEditing={handleSubmit}

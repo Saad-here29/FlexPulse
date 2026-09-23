@@ -99,7 +99,7 @@ export default function HomeView({ courses, notice, onDismissNotice, onNavigate,
   };
 
   // 2. Pie chart: how many courses are in each status (empty slices are left out)
-  const pieData = ['safe', 'warning', 'danger']
+  const pieData = Object.keys(STATUS_LABELS)
     .map((status) => ({
       name: STATUS_LABELS[status],
       count: courseStats.filter((s) => s.status === status).length,

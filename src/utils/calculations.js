@@ -3,10 +3,16 @@ import { ATTENDANCE_THRESHOLD, WARNING_MARGIN, GRADE_SCALE } from '../constants/
 
 // ---------- Attendance ----------
 
+// Guard against bad data: you cannot attend more classes than were held.
+// Every attendance function below uses this so they always agree.
+function capAttended(attended, total) {
+  return Math.min(attended, total);
+}
+
 // Percentage of classes attended. No classes held yet counts as 100%.
 export function getAttendancePercent(attended, total) {
   if (total === 0) return 100;
-  return (attended / total) * 100;
+  return (capAttended(attended, total) / total) * 100;
 }
 
 // 'safe' | 'warning' | 'danger' based on the threshold and warning margin
@@ -27,9 +33,10 @@ const MAX_ITERATIONS = 1000;
 
 // Max classes k the student can still miss so that attended / (total + k) stays >= threshold
 export function getClassesCanSkip(attended, total) {
+  const present = capAttended(attended, total);
   let k = 0;
   // Keep adding one more missed class while the percentage would still be OK
-  while (k < MAX_ITERATIONS && meetsThreshold(attended, total + k + 1)) {
+  while (k < MAX_ITERATIONS && meetsThreshold(present, total + k + 1)) {
     k++;
   }
   return k;
@@ -38,12 +45,13 @@ export function getClassesCanSkip(attended, total) {
 // Min classes n the student must attend in a row so that (attended + n) / (total + n) >= threshold.
 // Returns null if recovery is impossible (UI shows "Cannot recover at this threshold").
 export function getClassesToRecover(attended, total) {
+  const present = capAttended(attended, total);
   // At 100%, one missed class can never be made up
-  if (ATTENDANCE_THRESHOLD >= 100 && attended < total) return null;
+  if (ATTENDANCE_THRESHOLD >= 100 && present < total) return null;
 
   let n = 0;
   // Each attended class adds 1 to both attended and total
-  while (!meetsThreshold(attended + n, total + n)) {
+  while (!meetsThreshold(present + n, total + n)) {
     n++;
     if (n >= MAX_ITERATIONS) return null;
   }
@@ -96,16 +104,19 @@ export function getScorePercent(assessments) {
   return (getCurrentScore(assessments) / gradedWeight) * 100;
 }
 
-// Letter grade for a percentage, using the first boundary the score reaches
+// The GRADE_SCALE entry for a percentage: the first (highest) boundary the score reaches
+function findGrade(percent) {
+  return GRADE_SCALE.find((g) => percent >= g.min);
+}
+
+// Letter grade for a percentage, e.g. 86 -> 'A'
 export function getGrade(percent) {
-  const match = GRADE_SCALE.find((g) => percent >= g.min);
-  return match.grade;
+  return findGrade(percent).grade;
 }
 
 // Grade points (0.0 - 4.0) for a percentage, used for the GPA estimate
 export function getGradePoints(percent) {
-  const match = GRADE_SCALE.find((g) => percent >= g.min);
-  return match.points;
+  return findGrade(percent).points;
 }
 
 // Percentage needed in the remaining (ungraded) assessments, e.g. the final,
