@@ -3,8 +3,8 @@ import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
 import EmptyState from '../components/EmptyState';
-import { COLORS } from '../constants/config';
-import { getScorePercent, getGrade } from '../utils/calculations';
+import { COLORS, GRADING_NOTE } from '../constants/config';
+import { getScorePercent, getGrade, getGradePoints } from '../utils/calculations';
 
 export default function MarksView({ courses, onBack, onOpenCourse }) {
   // Attach each course's score % (null = no marks yet)
@@ -23,13 +23,14 @@ export default function MarksView({ courses, onBack, onOpenCourse }) {
       <ScreenHeader title="Marks & Final Calculator" subtitle="Lowest score first. Tap a course to plan your final." onBack={onBack} />
 
       <View style={styles.body}>
+        <Text style={styles.note}>{GRADING_NOTE}</Text>
         {sorted.length === 0 ? (
           <EmptyState title="No courses yet" message="Add a course from the Home screen." />
         ) : (
           sorted.map(({ course, score }) => {
             const grade = score === null ? '–' : getGrade(score);
-            // Failing courses are shown in red
-            const color = grade === 'F' ? COLORS.danger : COLORS.primary;
+            // Failing courses (0 grade points) are shown in red
+            const color = score !== null && getGradePoints(score) === 0 ? COLORS.danger : COLORS.primary;
 
             return (
               <Card key={course.id} onPress={() => onOpenCourse(course.id)}>
@@ -60,6 +61,12 @@ const styles = StyleSheet.create({
   },
   body: {
     paddingHorizontal: 20,
+  },
+  note: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: COLORS.textMuted,
+    marginBottom: 12,
   },
   row: {
     flexDirection: 'row',

@@ -48,3 +48,18 @@ export function validateCourse(form, existingCourses) {
 
   return errors;
 }
+
+// Validates marks typed for one assessment. Returns an error message, or null if valid.
+export function validateMarks(text, outOf) {
+  const value = text.trim();
+  if (value === '') return 'Enter the marks';
+
+  // Plain decimal number with an optional minus: "17", "17.5", ".5", "-1" (rejects "abc", "1e1")
+  if (!/^-?(\d+\.?\d*|\.\d+)$/.test(value)) return 'Enter a number';
+
+  const marks = Number(value);
+  if (marks < 0) return 'Marks cannot be negative';
+  if (marks > outOf) return `Marks cannot be more than ${outOf}`;
+  if (/\.\d{3,}$/.test(value)) return 'Use at most 2 decimal places';
+  return null;
+}

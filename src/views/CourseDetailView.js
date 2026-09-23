@@ -1,12 +1,20 @@
 import { useState } from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
 import StatusBadge from '../components/StatusBadge';
 import ProgressBar from '../components/ProgressBar';
 import FilterChips from '../components/FilterChips';
 import EmptyState from '../components/EmptyState';
-import { COLORS, STATUS_COLORS, GRADE_SCALE } from '../constants/config';
+import FormField from '../components/FormField';
+import PrimaryButton from '../components/PrimaryButton';
+import {
+  COLORS,
+  STATUS_COLORS,
+  GRADE_SCALE,
+  DEFAULT_TARGET_GRADE,
+  GRADING_NOTE,
+} from '../constants/config';
 import {
   getAttendancePercent,
   getAttendanceStatus,
@@ -17,9 +25,10 @@ import {
   getGrade,
   getRequiredFinalScore,
 } from '../utils/calculations';
+import { validateMarks } from '../utils/validation';
 
-// Target grade chips: every grade except F
-const GRADE_OPTIONS = GRADE_SCALE.filter((g) => g.grade !== 'F').map((g) => ({
+// Target grade chips built from GRADE_SCALE, leaving out the failing grade (0 points)
+const GRADE_OPTIONS = GRADE_SCALE.filter((g) => g.points > 0).map((g) => ({
   label: g.grade,
   value: g.grade,
 }));
@@ -40,8 +49,12 @@ function getTargetMessage(assessments, target) {
   return { color: COLORS.primary, text: `Achievable. Score at least ${needed.toFixed(1)}% in the remaining assessments.` };
 }
 
-export default function CourseDetailView({ course, onBack }) {
-  const [targetGrade, setTargetGrade] = useState('B');
+export default function CourseDetailView({ course, onBack, onUpdateMarks }) {
+  const [targetGrade, setTargetGrade] = useState(DEFAULT_TARGET_GRADE);
+  // Index of the assessment being edited (only one at a time), or null
+  const [editingIndex, setEditingIndex] = useState(null);
+  // Text typed in the marks editor
+  const [draft, setDraft] = useState('');
 
   // The course may have been removed while this view was open
   if (!course) {
@@ -63,6 +76,30 @@ export default function CourseDetailView({ course, onBack }) {
   const score = getCurrentScore(course.assessments);
   const scorePercent = getScorePercent(course.assessments); // null if nothing graded yet
   const gradedWeight = getGradedWeight(course.assessments);
+
+  // ----- Marks editor -----
+
+  // Open the editor for one row, pre-filled with its current marks
+  const startEditing = (index) => {
+    const obtained = course.assessments[index].obtained;
+    setEditingIndex(index);
+    setDraft(obtained === null ? '' : String(obtained));
+  };
+  const stopEditing = () => setEditingIndex(null);
+
+  // Save or clear the marks in App.js (null = back to Pending), then close the editor
+  const saveMarks = () => {
+    onUpdateMarks(course.id, editingIndex, Number(draft));
+    stopEditing();
+  };
+  const clearMarks = () => {
+    onUpdateMarks(course.id, editingIndex, null);
+    stopEditing();
+  };
+
+  // Error for the typed marks (null when valid or when nothing is being edited)
+  const draftError =
+    editingIndex === null ? null : validateMarks(draft, course.assessments[editingIndex].outOf);
 
   const target = GRADE_SCALE.find((g) => g.grade === targetGrade);
   const message = getTargetMessage(course.assessments, target);
@@ -95,18 +132,45 @@ export default function CourseDetailView({ course, onBack }) {
         {/* Assessments */}
         <Card>
           <Text style={styles.cardTitle}>Assessments</Text>
-          {course.assessments.map((a) => (
-            <View key={a.name} style={styles.assessmentRow}>
-              <Text style={styles.assessmentName}>
-                {a.name} <Text style={styles.muted}>({a.weight}%)</Text>
-              </Text>
-              {a.obtained === null ? (
-                <Text style={styles.pending}>Pending</Text>
-              ) : (
-                <Text style={styles.assessmentMarks}>
-                  {a.obtained}/{a.outOf}
+          <Text style={styles.muted}>Tap an assessment to enter or edit its marks.</Text>
+          {course.assessments.map((a, index) => (
+            <View key={a.name}>
+              <TouchableOpacity
+                style={[styles.assessmentRow, editingIndex === index && styles.assessmentRowActive]}
+                onPress={() => startEditing(index)}
+              >
+                <Text style={styles.assessmentName}>
+                  {a.name} <Text style={styles.muted}>({a.weight}%)</Text>
                 </Text>
-              )}
+                {a.obtained === null ? (
+                  <Text style={styles.pending}>Pending</Text>
+                ) : (
+                  <Text style={styles.assessmentMarks}>
+                    {a.obtained}/{a.outOf}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              {/* Inline editor, shown only under the row being edited */}
+              {editingIndex === index ? (
+                <View style={styles.editor}>
+                  <FormField
+                    label={`Marks out of ${a.outOf}`}
+                    placeholder="e.g. 17.5"
+                    value={draft}
+                    onChangeText={setDraft}
+                    // Don't show "Enter the marks" in red before the user has typed anything
+                    error={draft === '' ? null : draftError}
+                    keyboardType="decimal-pad"
+                    autoFocus
+                  />
+                  <View style={styles.editorButtons}>
+                    <PrimaryButton title="Save" onPress={saveMarks} disabled={draftError !== null} style={styles.editorButton} />
+                    <PrimaryButton title="Clear" outline onPress={clearMarks} style={styles.editorButton} />
+                    <PrimaryButton title="Cancel" outline onPress={stopEditing} style={styles.editorButton} />
+                  </View>
+                </View>
+              ) : null}
             </View>
           ))}
           <Text style={styles.summary}>
@@ -114,6 +178,7 @@ export default function CourseDetailView({ course, onBack }) {
               ? 'No marks entered yet'
               : `Score so far: ${score.toFixed(1)} / ${gradedWeight} → ${scorePercent.toFixed(1)}% (${getGrade(scorePercent)})`}
           </Text>
+          <Text style={styles.note}>{GRADING_NOTE}</Text>
         </Card>
 
         {/* Target grade calculator */}
@@ -201,6 +266,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: COLORS.text,
+  },
+  assessmentRowActive: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  editor: {
+    paddingVertical: 12,
+  },
+  editorButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  editorButton: {
+    flex: 1,
+    paddingVertical: 10,
+  },
+  note: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: COLORS.textMuted,
+    marginTop: 6,
   },
   pending: {
     fontSize: 13,

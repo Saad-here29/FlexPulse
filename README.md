@@ -36,6 +36,8 @@ The attendance limit (80%) and warning margin (5%) live in one config file, so c
 - **Course Detail**
   - Attendance summary and advice, plus assessment marks, with "Pending" for anything not yet graded.
   - Target grade chips that show the score you need in the remaining assessments.
+  - Tap an assessment to enter, edit or clear its marks in an inline editor. Invalid marks are rejected, and score, grade, GPA and charts update instantly.
+  - Grades are estimated with the FAST absolute grading scheme (A+ at 90% down to F below 50%).
 - **Add Course**
   - A validated form with inline error messages.
   - Rejects: empty fields, credit hours outside 1–4, decimals and negative numbers, attended more than total, and duplicate course codes.
@@ -60,7 +62,7 @@ flex-pulse/
     │   └── courses.js             The 5 sample courses the app starts with
     ├── utils/
     │   ├── calculations.js        Pure functions: attendance %, status, skip/recover, scores, grades, required final score
-    │   └── validation.js          Pure function that validates the Add Course form
+    │   └── validation.js          Pure functions that validate the Add Course form and typed assessment marks
     ├── components/
     │   ├── Card.js                White rounded card with a soft shadow; tappable if given onPress
     │   ├── ChartCard.js           Card with a title and one-line explanation for a chart
@@ -68,7 +70,7 @@ flex-pulse/
     │   ├── EmptyState.js          Message shown when a list is empty, with an optional button
     │   ├── FilterChips.js         Row of selectable chips (status filter, target grade)
     │   ├── FormField.js           Label + text input + red error message
-    │   ├── PrimaryButton.js       Main action button with a disabled state
+    │   ├── PrimaryButton.js       Main action button with disabled and outline styles
     │   ├── ProgressBar.js         Horizontal bar filled to a percentage
     │   ├── ScreenHeader.js        Screen title, subtitle and optional Back button
     │   ├── SearchBar.js           Search input with a clear (✕) button
@@ -77,7 +79,7 @@ flex-pulse/
         ├── HomeView.js            Dashboard: stats, alert banner, action cards and charts
         ├── AttendanceView.js      Attendance Planner: search, filter, sort, mark Present/Absent
         ├── MarksView.js           Courses sorted by score with grade and credit hours
-        ├── CourseDetailView.js    One course: attendance, assessments and target grade calculator
+        ├── CourseDetailView.js    One course: attendance, assessments, inline marks editor and target grade calculator
         └── AddCourseView.js       Form to add a new course
 ```
 
@@ -85,13 +87,13 @@ flex-pulse/
 
 | Concept | Where |
 |---|---|
-| **State (`useState`)** | `App.js`: `courses`, `currentView`, `selectedCourseId`, `previousView`, `notice`. `AttendanceView.js`: search text, status filter, sort order, last marked course. `CourseDetailView.js`: selected target grade. `AddCourseView.js`: form values, touched fields. |
+| **State (`useState`)** | `App.js`: `courses`, `currentView`, `selectedCourseId`, `previousView`, `notice`. `AttendanceView.js`: search text, status filter, sort order, last marked course. `CourseDetailView.js`: selected target grade, which assessment is being edited, typed marks. `AddCourseView.js`: form values, touched fields. |
 | **Refs (`useRef`)** | `AddCourseView.js`: keyboard "Next" moves focus to the following input. |
-| **Props** | `App.js` passes `courses` and handler functions (`onBack`, `onOpenCourse`, `onMarkAttendance`, `onAddCourse`) to every view. Views pass data down to components such as `CourseCard`, `StatusBadge`, `ProgressBar` and `FormField`. |
+| **Props** | `App.js` passes `courses` and handler functions (`onBack`, `onOpenCourse`, `onMarkAttendance`, `onAddCourse`, `onUpdateMarks`) to every view. Views pass data down to components such as `CourseCard`, `StatusBadge`, `ProgressBar` and `FormField`. |
 | **Events** | `onPress` on cards, chips and buttons (all components and views). `onChangeText` / `onBlur` / `onSubmitEditing` in `AddCourseView.js` and `SearchBar.js`. |
 | **Conditional rendering** | `App.js` `renderView()` switch on `currentView`. Empty states in every view. Alert banner in `HomeView.js`. Back button in `ScreenHeader.js`. Present/Absent buttons in `CourseCard.js`. Error messages in `FormField.js`. Target grade messages in `CourseDetailView.js`. |
 | **Lists (`.map`, `.filter`, `.reduce`, `.sort`)** | `.map`: rendering every list, building chart data and immutably updating a course in `App.js`. `.filter`: search and status filter in `AttendanceView.js`, at-risk courses in `HomeView.js`. `.reduce`: overall attendance and GPA in `HomeView.js`, graded weight in `calculations.js`. `.sort` on a copy: `AttendanceView.js` and `MarksView.js`. |
-| **Forms** | `AddCourseView.js` with `FormField.js`: controlled inputs, validation in `utils/validation.js`, inline errors and a submit button disabled until the form is valid. `KeyboardAvoidingView` + `ScrollView` stop the keyboard covering inputs. |
+| **Forms** | `AddCourseView.js` with `FormField.js`: controlled inputs, validation in `utils/validation.js`, inline errors and a submit button disabled until the form is valid. `KeyboardAvoidingView` + `ScrollView` stop the keyboard covering inputs. `CourseDetailView.js`: inline marks editor with `decimal-pad` input, validation and a Save button disabled while invalid. |
 
 ## Libraries
 

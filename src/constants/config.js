@@ -65,18 +65,26 @@ export const DEFAULT_ASSESSMENTS = [
   { name: 'Final Exam', weight: 50, obtained: null, outOf: 100 },
 ];
 
-// Grade boundaries, highest first. getGrade() picks the first one the score reaches.
+// FAST absolute grading scheme, highest first: { min percentage, grade, points }.
+// The exact (unrounded) score is compared with min, so 89.6 is A and 90.0 is A+.
+// getGrade() and getGradePoints() both read from this one array.
 export const GRADE_SCALE = [
-  { grade: 'A+', min: 90, points: 4.0 },
-  { grade: 'A', min: 86, points: 4.0 },
-  { grade: 'A-', min: 82, points: 3.67 },
-  { grade: 'B+', min: 78, points: 3.33 },
-  { grade: 'B', min: 74, points: 3.0 },
-  { grade: 'B-', min: 70, points: 2.67 },
-  { grade: 'C+', min: 66, points: 2.33 },
-  { grade: 'C', min: 62, points: 2.0 },
-  { grade: 'C-', min: 58, points: 1.67 },
-  { grade: 'D+', min: 54, points: 1.33 },
-  { grade: 'D', min: 50, points: 1.0 },
-  { grade: 'F', min: 0, points: 0.0 },
+  { min: 90, grade: 'A+', points: 4.00 },
+  { min: 86, grade: 'A', points: 4.00 },
+  { min: 82, grade: 'A-', points: 3.67 },
+  { min: 78, grade: 'B+', points: 3.33 },
+  { min: 74, grade: 'B', points: 3.00 },
+  { min: 70, grade: 'B-', points: 2.67 },
+  { min: 66, grade: 'C+', points: 2.33 },
+  { min: 62, grade: 'C', points: 2.00 },
+  { min: 58, grade: 'C-', points: 1.67 },
+  { min: 54, grade: 'D+', points: 1.33 },
+  { min: 50, grade: 'D', points: 1.00 },
+  { min: 0, grade: 'F', points: 0.00 },
 ];
+
+// Grade selected first in the Course Detail target-grade chips
+export const DEFAULT_TARGET_GRADE = 'B';
+
+// Shown wherever grades are estimated
+export const GRADING_NOTE = 'Estimated using FAST absolute grading; actual grades may be relative.';

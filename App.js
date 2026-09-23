@@ -66,6 +66,23 @@ export default function App() {
     );
   };
 
+  // Set the marks of one assessment (null = Pending). Nested .map copies only the
+  // changed course and the changed assessment, so state is never mutated.
+  const updateAssessmentMarks = (courseId, assessmentIndex, obtained) => {
+    setCourses(
+      courses.map((course) =>
+        course.id === courseId
+          ? {
+              ...course,
+              assessments: course.assessments.map((a, i) =>
+                i === assessmentIndex ? { ...a, obtained } : a
+              ),
+            }
+          : course
+      )
+    );
+  };
+
   // Conditional rendering: pick the view to show based on currentView
   const renderView = () => {
     switch (currentView) {
@@ -87,6 +104,7 @@ export default function App() {
           <CourseDetailView
             course={courses.find((c) => c.id === selectedCourseId)}
             onBack={goBackFromCourse}
+            onUpdateMarks={updateAssessmentMarks}
           />
         );
       default:
